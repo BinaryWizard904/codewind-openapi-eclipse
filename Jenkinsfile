@@ -2,7 +2,9 @@
 
 pipeline {
 
-    agent any
+    agent {
+        label "docker-build"
+    }
 
     options {
         timestamps() 
@@ -37,10 +39,6 @@ pipeline {
         } 
 
         stage('Test') {
-            agent {
-                label "docker-build"
-            }
-        
             steps {
                 script {
                     try {
@@ -71,6 +69,7 @@ pipeline {
                         docker system df
                         df -lh
                     '''
+                    deleteDir()
                 }
             }      
         }  
@@ -138,4 +137,10 @@ pipeline {
             }
         }       
     } 
+    post {
+        always {
+            echo 'Clean up workspace'
+            deleteDir() /* clean up our workspace */
+        }
+    }
 }
