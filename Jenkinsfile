@@ -29,11 +29,6 @@ pipeline {
                     dir('dev') { 
                         sh './gradlew --stacktrace' 
                     }
-                    dir('dev/ant_build/artifacts') { 
-                        stash name: 'codewind-openapi-eclipse-test.zip', includes: 'codewind-openapi-eclipse-test-*.zip'
-                        sh 'rm codewind-openapi-eclipse-test-*.zip' 
-                        stash name: 'codewind-openapi-eclipse-zip', includes: 'codewind-openapi-eclipse-*.zip'
-                    }
                 }
             }
         } 
@@ -42,11 +37,6 @@ pipeline {
             steps {
                 script {
                     try {
-                        dir('dev/ant_build/artifacts') { 
-                            unstash 'codewind-openapi-eclipse-test.zip'
-                            unstash 'codewind-openapi-eclipse-zip'
-                        }
-
                         sh '''#!/usr/bin/env bash
                             docker build --no-cache -t test-image ./dev
                             export CWD=$(pwd)
@@ -69,7 +59,6 @@ pipeline {
                         docker system df
                         df -lh
                     '''
-                    deleteDir()
                 }
             }      
         }  
@@ -90,10 +79,6 @@ pipeline {
             steps {
                 sshagent ( ['projects-storage.eclipse.org-bot-ssh']) {
                     println("Deploying codewind-openapi-eclipse to downoad area...")
-                    
-                    dir("$WORKSPACE/dev/ant_build/artifacts") {
-                        unstash 'codewind-openapi-eclipse-zip'
-                    }
                     
                     sh '''
                         export REPO_NAME="codewind-openapi-eclipse"
